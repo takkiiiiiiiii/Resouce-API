@@ -1,10 +1,10 @@
 package main
 
-import(
-   "net/http"
+import (
+	"net/http"
 
-   "github.com/takkiiiiiiiii/rest-api/controller"
-   "github.com/takkiiiiiiiii/rest-api/model/repository"
+	"github.com/takkiiiiiiiii/rest-api/controller"
+	"github.com/takkiiiiiiiii/rest-api/model/repository"
 )
 
 //DI
@@ -13,7 +13,6 @@ var tc = controller.NewApiController(tr)
 var ro = controller.NewRouter(tc)
 
 func main() {
-     http.HandleFunc("/api/users/",ro.HandleApiRequest)
-     http.ListenAndServe(":7777",nil)
+	http.HandleFunc("/api/users/", ro.HandleApiRequest)
+	http.ListenAndServe(":7777", nil)
 }
-

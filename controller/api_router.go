@@ -1,11 +1,11 @@
 package controller
 
-import(
+import (
 	"net/http"
 )
 
 type Router interface {
-	HandleApiRequest(w http.ResponseWriter, r *http.Request) 
+	HandleApiRequest(w http.ResponseWriter, r *http.Request)
 }
 
 type router struct {
@@ -18,15 +18,17 @@ func NewRouter(tc ApiContoller) *router {
 
 func (ro *router) HandleApiRequest(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-    case "GET":
+	case "GET":
 		ro.tc.GetApi(w, r)
+	case "GETID":
+		ro.tc.GetApiId(w, r)
 	case "POST":
-	    ro.tc.PostApi(w, r)
+		ro.tc.PostApi(w, r)
 	case "PUT":
 		ro.tc.UpdateApi(w, r)
 	case "DELETE":
 		ro.tc.DeleteApi(w, r)
-	default :
-	    w.WriteHeader(405)
+	default:
+		w.WriteHeader(405)
 	}
 }

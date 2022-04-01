@@ -1,28 +1,27 @@
 package controller
 
-import(
+import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"path"
+	"strconv"
 
 	"github.com/takkiiiiiiiii/rest-api/controller/dto"
-	"github.com/takkiiiiiiiii/rest-api/model/repository"
 	"github.com/takkiiiiiiiii/rest-api/model/entity"
-	
+	"github.com/takkiiiiiiiii/rest-api/model/repository"
 )
 
 type ApiContoller interface {
-     GetApi(w http.ResponseWriter, r *http.Request)
-	 PostApi(w http.ResponseWriter, r *http.Request)
-	 UpdateApi(w http.ResponseWriter, r *http.Request)
-	 DeleteApi(w http.ResponseWriter, r *http.Request)
+	GetApi(w http.ResponseWriter, r *http.Request)
+	GetApiId(w http.ResponseWriter, r *http.Request)
+	PostApi(w http.ResponseWriter, r *http.Request)
+	UpdateApi(w http.ResponseWriter, r *http.Request)
+	DeleteApi(w http.ResponseWriter, r *http.Request)
 }
 
 type apiController struct {
-     tr repository.ApiRepository
+	tr repository.ApiRepository
 }
-
 
 func NewApiController(tr repository.ApiRepository) *apiController {
 	return &apiController{tr}
@@ -33,7 +32,7 @@ func (tc *apiController) GetApi(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(500)
 		return
-	} 
+	}
 	var apiResponse []dto.ApiResponse
 	for _, v := range data {
 		apiResponse = append(apiResponse, dto.ApiResponse{Id: v.Id, Name: v.Name, Contents: v.Contents, Created: v.Created})
@@ -42,11 +41,28 @@ func (tc *apiController) GetApi(w http.ResponseWriter, r *http.Request) {
 	apisResponse.Api = apiResponse
 	output, _ := json.MarshalIndent(apisResponse.Api, "", "\t")
 
-	w.Header().Set("Content-Type","application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(output)
 }
 
-func (tc *apiController) PostApi(w http.ResponseWriter, r *http.Request){
+func (tc *apiController) GetApiId(w http.ResponseWriter, r *http.Request) {
+	apiId, err := strconv.Atoi(path.Base(r.URL.Path))
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+	data, err := tc.tr.GetId_Api(apiId)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+	dataResponse := dto.ApiResponse{Id: apiId, Name: data.Name, Contents: data.Contents, Created: data.Created}
+	output, _ := json.MarshalIndent(dataResponse, "", "\t")
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(output)
+}
+
+func (tc *apiController) PostApi(w http.ResponseWriter, r *http.Request) {
 	body := make([]byte, r.ContentLength)
 	r.Body.Read(body)
 	var apiRequest dto.ApiRequest
@@ -59,14 +75,14 @@ func (tc *apiController) PostApi(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	Id := strconv.FormatInt(id, 10)
-	w.Header().Set("Location", r.Host + r.URL.Path + Id) // r.URL.Path > /api/users/
+	w.Header().Set("Location", r.Host+r.URL.Path+Id) // r.URL.Path > /api/users/
 	w.WriteHeader(201)
 }
 
 func (tc *apiController) UpdateApi(w http.ResponseWriter, r *http.Request) {
 	Id, err := strconv.Atoi(path.Base(r.URL.Path)) // r.URL.Path > ex:/api/users/2   path.Base(r.URL.Path) > 2
 	if err != nil {
-        w.WriteHeader(400)
+		w.WriteHeader(400)
 		return
 	}
 	body := make([]byte, r.ContentLength)

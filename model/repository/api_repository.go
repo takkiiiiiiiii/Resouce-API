@@ -12,6 +12,7 @@ import (
 
 type ApiRepository interface {
 	Get_Api() (data []entity.ApiEntity, err error)
+	GetId_Api(apiId int) (data entity.ApiEntity, err error)
 	Insert_Api(datum entity.ApiEntity) (id int64, err error)
 	Update_Api(datum entity.ApiEntity) (err error)
 	Delete_Api(id int) (err error)
@@ -20,7 +21,7 @@ type ApiRepository interface {
 type apiRepository struct {
 }
 
-func NewApiRepository() *apiRepository{
+func NewApiRepository() *apiRepository {
 	return &apiRepository{}
 }
 
@@ -30,10 +31,10 @@ func (tr *apiRepository) Get_Api() (data []entity.ApiEntity, err error) {
 	data = []entity.ApiEntity{}
 	rows, err := Db.Query("SELECT * FROM User_Info")
 	if err != nil {
-         log.Print(err)
-		 return
+		log.Print(err)
+		return
 	}
-	for rows.Next(){
+	for rows.Next() {
 		datum := entity.ApiEntity{}
 		err = rows.Scan(&datum.Id, &datum.Name, &datum.Contents, &datum.Created)
 		if err != nil {
@@ -45,8 +46,23 @@ func (tr *apiRepository) Get_Api() (data []entity.ApiEntity, err error) {
 	return
 }
 
+func (tr *apiRepository) GetId_Api(apiId int) (data entity.ApiEntity, err error) {
+	row, err := Db.Query("SELECT * FROM User_Info WHERE ID = ?", apiId)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	for row.Next() {
+		data = entity.ApiEntity{}
+		if err := row.Scan(&apiId, &data.Name, &data.Contents, &data.Created); err != nil {
+			log.Print(err)
+		}
+	}
+	return
+}
+
 func (tr *apiRepository) Insert_Api(datum entity.ApiEntity) (id int64, err error) {
-    stmt, err := Db.Prepare("INSERT INTO User_Info(NAME, CONTENTS, CREATED) VALUES(?,?,now())")
+	stmt, err := Db.Prepare("INSERT INTO User_Info(NAME, CONTENTS, CREATED) VALUES(?,?,now())")
 	if err != nil {
 		log.Print(err)
 		return
@@ -66,7 +82,7 @@ func (tr *apiRepository) Insert_Api(datum entity.ApiEntity) (id int64, err error
 }
 
 func (tr *apiRepository) Update_Api(datum entity.ApiEntity) (err error) {
-	stmt1, err := Db.Prepare("UPDATE User_Info SET NAME = ?, CONTENTS = ?, CREATED = now() WHERE ID = ?") 
+	stmt1, err := Db.Prepare("UPDATE User_Info SET NAME = ?, CONTENTS = ?, CREATED = now() WHERE ID = ?")
 	if err != nil {
 		log.Print(err)
 		return
@@ -84,7 +100,7 @@ func (tr *apiRepository) Update_Api(datum entity.ApiEntity) (err error) {
 	return
 }
 
-func (tr *apiRepository) Delete_Api(id int)(err error) {
+func (tr *apiRepository) Delete_Api(id int) (err error) {
 	stmt, err := Db.Prepare("DELETE FROM User_Info WHERE ID = ?")
 	if err != nil {
 		log.Print(err)
@@ -98,4 +114,3 @@ func (tr *apiRepository) Delete_Api(id int)(err error) {
 	}
 	return
 }
-
